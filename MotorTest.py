@@ -25,10 +25,10 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         command = receivedMessage[0]
         print(command)
         if command == 'f':
-            speed = float(receivedMessage[1:])
+            speed = float(receivedMessage[1:6])
             rMotor.forward(speed)
         elif command == 'b':
-            speed = float(receivedMessage[1:])
+            speed = float(receivedMessage[1:6])
             rMotor.backward(speed)
         elif command == 's':
             rMotor.stop()
@@ -37,4 +37,4 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
             break
         else:
             continue
-        sleep(0.01)
+        sleep(0.1)

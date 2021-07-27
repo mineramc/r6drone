@@ -9,25 +9,43 @@ MSGLEN = 100
 
 pygame.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
-joystickEnabled = joysticks.len > 0
+joystickEnabled = len(joysticks) > 0
 
 def joystickToInput():
-    command = ""
     pygame.event.pump()
     joystick = joysticks[0]
     joystick.init()
+    stopButton = joystick.get_button(3)
+    if stopButton == 1 :
+        return "e"
     leftVal = clearThreshold(joystick.get_axis(1))
     rightVal = clearThreshold(joystick.get_axis(3))
+    leftCommand = valueToString(leftVal)
+    rightCommand = valueToString(rightVal)
+    print("Right: " + str(rightVal))
+    print("Left: " + str(leftVal))
+    return rightCommand
 
-    print("Axis 1: " + str(leftVal))
-    print("Axis 3: " + str(rightVal))
-    return ""
+
+def valueToString(joystickVal):
+    if joystickVal == 0:
+        return "s"
+    elif joystickVal > 0:
+        if joystickVal == 1.0 :
+            return "b1.000"
+        return "b" + str(abs(joystickVal))
+    else:
+        if joystickVal == -1.0 :
+            return "f1.000"
+        return "f" + str(abs(joystickVal))
+
 
 def clearThreshold(joystickVal):
-    if joystickVal < 0.0001:
+    if abs(joystickVal) < 0.0001:
         return 0
     else:
-        return joystickVal
+        return round(joystickVal, 3)
+
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.bind((HOST, PORT))
@@ -43,5 +61,6 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 inputCommand = input()
             print(inputCommand)
             conn.sendall(inputCommand.encode())
+            sleep(0.1)
 
 
