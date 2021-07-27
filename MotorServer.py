@@ -2,10 +2,11 @@ import socket
 from socket import timeout
 from time import sleep
 import pygame
+import json
 
 HOST = ''
 PORT = 65432
-MSGLEN = 100
+MSGLEN = 200
 
 pygame.init()
 joysticks = [pygame.joystick.Joystick(x) for x in range(pygame.joystick.get_count())]
@@ -16,28 +17,28 @@ def joystickToInput():
     joystick = joysticks[0]
     joystick.init()
     stopButton = joystick.get_button(3)
-    if stopButton == 1 :
-        return "e"
+    if stopButton == 1:
+        return "ee"
     leftVal = clearThreshold(joystick.get_axis(1))
     rightVal = clearThreshold(joystick.get_axis(3))
     leftCommand = valueToString(leftVal)
     rightCommand = valueToString(rightVal)
     print("Right: " + str(rightVal))
     print("Left: " + str(leftVal))
-    return rightCommand
+    return rightCommand + leftCommand
 
 
 def valueToString(joystickVal):
     if joystickVal == 0:
-        return "s"
+        return "s0.000"
     elif joystickVal > 0:
-        if joystickVal == 1.0 :
+        if joystickVal == 1.0:
             return "b1.000"
-        return "b" + str(abs(joystickVal))
+        return "b" + str("{:.3f}".format(abs(joystickVal)))
     else:
-        if joystickVal == -1.0 :
+        if joystickVal == -1.0:
             return "f1.000"
-        return "f" + str(abs(joystickVal))
+        return "f" + str("{:.3f}".format(abs(joystickVal)))
 
 
 def clearThreshold(joystickVal):
@@ -53,14 +54,15 @@ with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     conn, addr = s.accept()
     print('Connected by', addr)
     with conn:
-        inputCommand = ''
-        while inputCommand != "end":
+        inputCommand = ' '
+        while inputCommand[0] != 'e':
             if joystickEnabled:
                 inputCommand = joystickToInput()
             else:
-                inputCommand = input()
+                #todo: Graphical/CommandLine
+                inputCommand = "ee"
             print(inputCommand)
             conn.sendall(inputCommand.encode())
-            sleep(0.1)
+            sleep(0.15)
 
 
